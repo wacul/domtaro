@@ -21,6 +21,13 @@ function getDocumentHeight() {
   return document.documentElement.scrollHeight;
 }
 
+function fixCharset() {
+  const metaCharset = document.querySelector("meta[charset]");
+  if (metaCharset && metaCharset.charset) metaCharset.charset = "UTF-8";
+  const metaHttpEquiv = document.querySelector("meta[http-equiv=content-type]");
+  if (metaHttpEquiv && metaHttpEquiv.content) metaHttpEquiv.content = "text/html; charset=UTF-8";
+}
+
 module.exports.snapshot = async (url, options = {}) => {
   const launchOptions = { ...defaultOptions.launchOptions, ...options.launchOptions };
   const gotoOptions = { ...defaultOptions.gotoOptions, ...options.gotoOptions };
@@ -45,8 +52,9 @@ module.exports.snapshot = async (url, options = {}) => {
   for (let i = 0; i < evaluates.length; i++) {
     await evaluates[i](page);
   }
+  await page.evaluate(fixCharset);
 
-  return await page.evaluate(async () => {
+  const str = await page.evaluate(async () => {
     [...document.querySelectorAll("link, a")].forEach(el => { if (el.href) el.href = el.href; });
     [...document.querySelectorAll("img, video, audio")].forEach(el => { if (el.src) el.src = el.src; });
     [...document.querySelectorAll("script, noscript")].forEach(el => el.remove());
@@ -54,7 +62,7 @@ module.exports.snapshot = async (url, options = {}) => {
       const rect = el.getBoundingClientRect();
       const computed = window.getComputedStyle(el);
       if (computed.display === "none") el.remove();
-      if (rect.width < 10 || rect.height < 10) el.remove();
+      if (rect.width < 5 || rect.height < 5) el.remove();
     });
 
     const domEvents = Object.getOwnPropertyNames(HTMLElement.prototype).filter(name => name.startsWith("on"));
@@ -68,4 +76,6 @@ module.exports.snapshot = async (url, options = {}) => {
         return `url(${img.src})`;
       });
   });
+
+  return str;
 };
