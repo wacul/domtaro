@@ -15,6 +15,9 @@
   ],
   "author": "WACUL INC.",
   "license": "MIT",
+  "bin": {
+    "domtaro": "bin/domtaro.js"
+  },
   "bugs": {
     "url": "https://github.com/wacul/domtaro/issues"
   },
