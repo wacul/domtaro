@@ -7,7 +7,22 @@ const defaultOptions = {
     userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36",
     viewport: { width: 1280, height: 800 },
   },
-  pageInitializer: async browser => await browser.newPage(),
+  pageInitializer: async browser => {
+    const page = await browser.newPage();
+    await page.emulate(emulateOptions);
+    await page.goto(url, gotoOptions);
+    await page.evaluate(wait);
+    const h = await page.evaluate(getDocumentHeight);
+    await page.emulate({
+      userAgent: emulateOptions.userAgent,
+      viewport: {
+        width: emulateOptions.viewport.width,
+        height: h,
+      },
+    });
+    await page.evaluate(wait);
+    return page;
+  },
   evaluates: [],
 };
 module.exports.defaultOptions = defaultOptions;
@@ -32,22 +47,23 @@ module.exports.snapshot = async (url, options = {}) => {
   const launchOptions = { ...defaultOptions.launchOptions, ...options.launchOptions };
   const gotoOptions = { ...defaultOptions.gotoOptions, ...options.gotoOptions };
   const emulateOptions = { ...defaultOptions.emulateOptions, ...options.emulateOptions };
+
   const browser = options.browser || await puppeteer.launch(launchOptions);
 
-  const page = await (options.pageInitializer || defaultOptions.pageInitializer)(browser);
-  await page.emulate(emulateOptions);
-  await page.goto(url, gotoOptions);
-  await page.evaluate(wait);
-  const h = await page.evaluate(getDocumentHeight);
-  await page.emulate({
-    userAgent: emulateOptions.userAgent,
-    viewport: {
-      width: emulateOptions.viewport.width,
-      height: h,
-    },
-  });
-  await page.evaluate(wait);
-
+  let page;
+  if (options.pageInitializer) {
+    page = await pageInitializer(browser, {
+      launchOptions,
+      gotoOptions,
+      emulateOptions,
+    });
+  } else {
+    page = await defaultOptions.pageInitializer(browser, {
+      launchOptions,
+      gotoOptions,
+      emulateOptions,
+    });
+  }
   const evaluates = options.evaluates || defaultOptions.evaluates;
   for (let i = 0; i < evaluates.length; i++) {
     await evaluates[i](page);
@@ -78,5 +94,6 @@ module.exports.snapshot = async (url, options = {}) => {
       });
   });
 
+  if (!options.browser) await browser.close();
   return str;
 };
