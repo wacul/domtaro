@@ -1,6 +1,6 @@
 # domtaro
 
-Domtaro takes snapshots that strips scripts and fix resource urls.
+Domtaro takes a dom snapshot as html. Strip scripts and fix resource urls.
 
 ```
 $ npm install -g domtaro
