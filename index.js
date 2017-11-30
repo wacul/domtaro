@@ -51,7 +51,7 @@ module.exports.snapshot = async (url, options = {}) => {
   let browser = options.browser;
   let page;
   if (options.pageInitializer) {
-    page = await pageInitializer(browser, {
+    page = await options.pageInitializer(browser, {
       launchOptions,
       gotoOptions,
       emulateOptions,
