@@ -48,8 +48,7 @@ module.exports.snapshot = async (url, options = {}) => {
   const gotoOptions = { ...defaultOptions.gotoOptions, ...options.gotoOptions };
   const emulateOptions = { ...defaultOptions.emulateOptions, ...options.emulateOptions };
 
-  const browser = options.browser || await puppeteer.launch(launchOptions);
-
+  let browser = options.browser;
   let page;
   if (options.pageInitializer) {
     page = await pageInitializer(browser, {
@@ -58,6 +57,7 @@ module.exports.snapshot = async (url, options = {}) => {
       emulateOptions,
     });
   } else {
+    browser = await puppeteer.launch(launchOptions);
     page = await defaultOptions.pageInitializer(browser, {
       launchOptions,
       gotoOptions,
@@ -94,6 +94,6 @@ module.exports.snapshot = async (url, options = {}) => {
       });
   });
 
-  if (!options.browser) await browser.close();
+  if (!options.browser && browser) await browser.close();
   return str;
 };
