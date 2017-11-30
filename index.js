@@ -71,9 +71,9 @@ module.exports.snapshot = async (url, options = {}) => {
   await page.evaluate(fixCharset);
 
   const str = await page.evaluate(async () => {
-    [...document.querySelectorAll("link, a")].forEach(el => { if (el.href) el.href = el.href; });
+    [...document.querySelectorAll("[href]")].forEach(el => { if (el.href) el.href = el.href; });
     [...document.querySelectorAll("a")].forEach(el => el.target = "_blank");
-    [...document.querySelectorAll("img, video, audio")].forEach(el => { if (el.src) el.src = el.src; });
+    [...document.querySelectorAll("[src]")].forEach(el => { if (el.src) el.src = el.src; });
     [...document.querySelectorAll("script, noscript")].forEach(el => el.remove());
     [...document.querySelectorAll("iframe")].forEach(el => {
       const rect = el.getBoundingClientRect();
