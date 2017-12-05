@@ -95,5 +95,5 @@ module.exports.snapshot = async (url, options = {}) => {
   });
 
   if (!options.browser && browser) await browser.close();
-  return str;
+  return "<!doctype html>" + str;
 };
