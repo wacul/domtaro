@@ -89,8 +89,8 @@ module.exports.snapshot = async (url, options = {}) => {
     const img = new Image();
     return document.documentElement.outerHTML
       .replace(/url\(([^)]+)\)/g, (all, src) => {
-        img.src = src.replace(/['"]/g, "");
-        return `url("${img.src}")`;
+        img.src = src.replace(/(['"]|&quot;)/g, "");
+        return `url(${img.src})`;
       });
   });
 
