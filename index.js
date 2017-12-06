@@ -7,16 +7,16 @@ const defaultOptions = {
     userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36",
     viewport: { width: 1280, height: 800 },
   },
-  pageInitializer: async browser => {
+  pageInitializer: async (browser, url, opts) => {
     const page = await browser.newPage();
-    await page.emulate(emulateOptions);
-    await page.goto(url, gotoOptions);
+    await page.emulate(opts.emulateOptions);
+    await page.goto(url, opts.gotoOptions);
     await page.evaluate(wait);
     const h = await page.evaluate(getDocumentHeight);
     await page.emulate({
-      userAgent: emulateOptions.userAgent,
+      userAgent: opts.emulateOptions.userAgent,
       viewport: {
-        width: emulateOptions.viewport.width,
+        width: opts.emulateOptions.viewport.width,
         height: h,
       },
     });
@@ -38,9 +38,9 @@ function getDocumentHeight() {
 
 function fixCharset() {
   const metaCharset = document.querySelector("meta[charset]");
-  if (metaCharset && metaCharset.charset) metaCharset.charset = "UTF-8";
+  if (metaCharset) metaCharset.setAttribute("charset", "UTF-8");
   const metaHttpEquiv = document.querySelector("meta[http-equiv=content-type]");
-  if (metaHttpEquiv && metaHttpEquiv.content) metaHttpEquiv.content = "text/html; charset=UTF-8";
+  if (metaHttpEquiv) metaHttpEquiv.setAttribute("content", "text/html; charset=UTF-8");
 }
 
 module.exports.snapshot = async (url, options = {}) => {
@@ -51,14 +51,14 @@ module.exports.snapshot = async (url, options = {}) => {
   let browser = options.browser;
   let page;
   if (options.pageInitializer) {
-    page = await options.pageInitializer(browser, {
+    page = await options.pageInitializer(browser, url, {
       launchOptions,
       gotoOptions,
       emulateOptions,
     });
   } else {
     browser = await puppeteer.launch(launchOptions);
-    page = await defaultOptions.pageInitializer(browser, {
+    page = await defaultOptions.pageInitializer(browser, url, {
       launchOptions,
       gotoOptions,
       emulateOptions,
@@ -89,8 +89,8 @@ module.exports.snapshot = async (url, options = {}) => {
     const img = new Image();
     return document.documentElement.outerHTML
       .replace(/url\(([^)]+)\)/g, (all, src) => {
-        img.src = src.replace(/^['"]/, "").replace(/['"]$/, "");
-        return `url(${img.src})`;
+        img.src = src.replace(/['"]/g, "");
+        return `url("${img.src}")`;
       });
   });
 
