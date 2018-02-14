@@ -7,6 +7,7 @@ const defaultOptions = {
     userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36",
     viewport: { width: 1280, height: 800 },
   },
+  screenshotOptions: {},
   pageInitializer: async (browser, url, opts) => {
     const page = await browser.newPage();
     await page.emulate(opts.emulateOptions);
@@ -98,4 +99,35 @@ module.exports.snapshot = async (url, options = {}) => {
 
   if (!options.browser && browser) await browser.close();
   return "<!doctype html>" + str;
+};
+
+module.exports.screenshot = async (url, options = {}) => {
+  const launchOptions = { ...defaultOptions.launchOptions, ...options.launchOptions };
+  const gotoOptions = { ...defaultOptions.gotoOptions, ...options.gotoOptions };
+  const emulateOptions = { ...defaultOptions.emulateOptions, ...options.emulateOptions };
+  const screenshotOptions = { ...defaultOptions.screenshotOptions, ...options.screenshotOptions };
+
+  let browser = options.browser;
+  let page;
+  if (options.pageInitializer) {
+    page = await options.pageInitializer(browser, url, {
+      launchOptions,
+      gotoOptions,
+      emulateOptions,
+    });
+  } else {
+    browser = await puppeteer.launch(launchOptions);
+    page = await defaultOptions.pageInitializer(browser, url, {
+      launchOptions,
+      gotoOptions,
+      emulateOptions,
+    });
+  }
+  const evaluates = options.evaluates || defaultOptions.evaluates;
+  for (let i = 0; i < evaluates.length; i++) {
+    await evaluates[i](page);
+  }
+  const buff = await page.screenshot(screenshotOptions);
+  if (!options.browser && browser) await browser.close();
+  return buff;
 };
