@@ -51,6 +51,7 @@ module.exports.snapshot = async (url, options = {}) => {
 
   let browser = options.browser;
   let page;
+  let str = "";
   try {
     if (options.pageInitializer) {
       page = await options.pageInitializer(browser, url, {
@@ -72,7 +73,7 @@ module.exports.snapshot = async (url, options = {}) => {
     }
     await page.evaluate(fixCharset);
 
-    const str = await page.evaluate(async () => {
+    str = await page.evaluate(async () => {
       [...document.querySelectorAll("[href]")].forEach(el => { if (el.href) el.href = el.href; });
       [...document.querySelectorAll("a")].forEach(el => el.target = "_blank");
       [...document.querySelectorAll("[src]")].forEach(el => { if (el.src) el.src = el.src; });
