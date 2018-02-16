@@ -51,53 +51,57 @@ module.exports.snapshot = async (url, options = {}) => {
 
   let browser = options.browser;
   let page;
-  if (options.pageInitializer) {
-    page = await options.pageInitializer(browser, url, {
-      launchOptions,
-      gotoOptions,
-      emulateOptions,
-    });
-  } else {
-    browser = await puppeteer.launch(launchOptions);
-    page = await defaultOptions.pageInitializer(browser, url, {
-      launchOptions,
-      gotoOptions,
-      emulateOptions,
-    });
-  }
-  const evaluates = options.evaluates || defaultOptions.evaluates;
-  for (let i = 0; i < evaluates.length; i++) {
-    await evaluates[i](page);
-  }
-  await page.evaluate(fixCharset);
-
-  const str = await page.evaluate(async () => {
-    [...document.querySelectorAll("[href]")].forEach(el => { if (el.href) el.href = el.href; });
-    [...document.querySelectorAll("a")].forEach(el => el.target = "_blank");
-    [...document.querySelectorAll("[src]")].forEach(el => { if (el.src) el.src = el.src; });
-    [...document.querySelectorAll("script, noscript")].forEach(el => el.remove());
-    [...document.querySelectorAll("iframe")].forEach(el => {
-      const rect = el.getBoundingClientRect();
-      const computed = window.getComputedStyle(el);
-      if (computed.display === "none") el.remove();
-      if (rect.width < 5 || rect.height < 5) el.remove();
-    });
-
-    const domEvents = Object.getOwnPropertyNames(HTMLElement.prototype).filter(name => name.startsWith("on"));
-    [...document.querySelectorAll("*")].forEach(el => {
-      domEvents.forEach(name => el.hasAttribute(name) && el.removeAttribute(name));
-    });
-    const img = new Image();
-    return document.documentElement.outerHTML
-      .replace(/url\(([^)]+)\)/g, (all, src) => {
-        src = src.replace(/(['"]|&quot;)/g, "");
-        if (src.startsWith("#")) return `url(${src})`;
-        img.src = src;
-        return `url(${img.src})`;
+  try {
+    if (options.pageInitializer) {
+      page = await options.pageInitializer(browser, url, {
+        launchOptions,
+        gotoOptions,
+        emulateOptions,
       });
-  });
+    } else {
+      browser = await puppeteer.launch(launchOptions);
+      page = await defaultOptions.pageInitializer(browser, url, {
+        launchOptions,
+        gotoOptions,
+        emulateOptions,
+      });
+    }
+    const evaluates = options.evaluates || defaultOptions.evaluates;
+    for (let i = 0; i < evaluates.length; i++) {
+      await evaluates[i](page);
+    }
+    await page.evaluate(fixCharset);
 
-  if (!options.browser && browser) await browser.close();
+    const str = await page.evaluate(async () => {
+      [...document.querySelectorAll("[href]")].forEach(el => { if (el.href) el.href = el.href; });
+      [...document.querySelectorAll("a")].forEach(el => el.target = "_blank");
+      [...document.querySelectorAll("[src]")].forEach(el => { if (el.src) el.src = el.src; });
+      [...document.querySelectorAll("script, noscript")].forEach(el => el.remove());
+      [...document.querySelectorAll("iframe")].forEach(el => {
+        const rect = el.getBoundingClientRect();
+        const computed = window.getComputedStyle(el);
+        if (computed.display === "none") el.remove();
+        if (rect.width < 5 || rect.height < 5) el.remove();
+      });
+
+      const domEvents = Object.getOwnPropertyNames(HTMLElement.prototype).filter(name => name.startsWith("on"));
+      [...document.querySelectorAll("*")].forEach(el => {
+        domEvents.forEach(name => el.hasAttribute(name) && el.removeAttribute(name));
+      });
+      const img = new Image();
+      return document.documentElement.outerHTML
+        .replace(/url\(([^)]+)\)/g, (all, src) => {
+          src = src.replace(/(['"]|&quot;)/g, "");
+          if (src.startsWith("#")) return `url(${src})`;
+          img.src = src;
+          return `url(${img.src})`;
+        });
+    });
+  } catch (e) {
+    throw e;
+  } finally {
+    if (!options.browser && browser) await browser.close();
+  }
   return "<!doctype html>" + str;
 };
 
@@ -109,25 +113,31 @@ module.exports.screenshot = async (url, options = {}) => {
 
   let browser = options.browser;
   let page;
-  if (options.pageInitializer) {
-    page = await options.pageInitializer(browser, url, {
-      launchOptions,
-      gotoOptions,
-      emulateOptions,
-    });
-  } else {
-    browser = await puppeteer.launch(launchOptions);
-    page = await defaultOptions.pageInitializer(browser, url, {
-      launchOptions,
-      gotoOptions,
-      emulateOptions,
-    });
+  let buff;
+  try {
+    if (options.pageInitializer) {
+      page = await options.pageInitializer(browser, url, {
+        launchOptions,
+        gotoOptions,
+        emulateOptions,
+      });
+    } else {
+      browser = await puppeteer.launch(launchOptions);
+      page = await defaultOptions.pageInitializer(browser, url, {
+        launchOptions,
+        gotoOptions,
+        emulateOptions,
+      });
+    }
+    const evaluates = options.evaluates || defaultOptions.evaluates;
+    for (let i = 0; i < evaluates.length; i++) {
+      await evaluates[i](page);
+    }
+    buff = await page.screenshot(screenshotOptions);
+  } catch (e) {
+    throw e;
+  } finally {
+    if (!options.browser && browser) await browser.close();
   }
-  const evaluates = options.evaluates || defaultOptions.evaluates;
-  for (let i = 0; i < evaluates.length; i++) {
-    await evaluates[i](page);
-  }
-  const buff = await page.screenshot(screenshotOptions);
-  if (!options.browser && browser) await browser.close();
   return buff;
 };
