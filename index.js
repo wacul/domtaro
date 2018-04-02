@@ -1,11 +1,14 @@
 const puppeteer = require("puppeteer");
 const defaultOptions = {
   browser: null,
-  launchOptions: { args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-http2"] },
+  launchOptions: {
+    args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-http2"]
+  },
   gotoOptions: { waitUntil: "networkidle2" },
   emulateOptions: {
-    userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36",
-    viewport: { width: 1280, height: 800 },
+    userAgent:
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36",
+    viewport: { width: 1280, height: 800 }
   },
   screenshotOptions: {},
   pageInitializer: async (browser, url, opts) => {
@@ -18,13 +21,13 @@ const defaultOptions = {
       userAgent: opts.emulateOptions.userAgent,
       viewport: {
         width: opts.emulateOptions.viewport.width,
-        height: h,
-      },
+        height: h
+      }
     });
     await page.evaluate(wait);
     return page;
   },
-  evaluates: [],
+  evaluates: []
 };
 module.exports.defaultOptions = defaultOptions;
 
@@ -45,9 +48,15 @@ function fixCharset() {
 }
 
 module.exports.snapshot = async (url, options = {}) => {
-  const launchOptions = { ...defaultOptions.launchOptions, ...options.launchOptions };
+  const launchOptions = {
+    ...defaultOptions.launchOptions,
+    ...options.launchOptions
+  };
   const gotoOptions = { ...defaultOptions.gotoOptions, ...options.gotoOptions };
-  const emulateOptions = { ...defaultOptions.emulateOptions, ...options.emulateOptions };
+  const emulateOptions = {
+    ...defaultOptions.emulateOptions,
+    ...options.emulateOptions
+  };
 
   let browser = options.browser;
   let page;
@@ -57,17 +66,16 @@ module.exports.snapshot = async (url, options = {}) => {
       page = await options.pageInitializer(browser, url, {
         launchOptions,
         gotoOptions,
-        emulateOptions,
+        emulateOptions
       });
     } else {
       browser = await puppeteer.launch(launchOptions);
       page = await defaultOptions.pageInitializer(browser, url, {
         launchOptions,
         gotoOptions,
-        emulateOptions,
+        emulateOptions
       });
     }
-    await scrollToPageBottomThenBackToTop(page);
     const evaluates = options.evaluates || defaultOptions.evaluates;
     for (let i = 0; i < evaluates.length; i++) {
       await evaluates[i](page);
@@ -75,10 +83,14 @@ module.exports.snapshot = async (url, options = {}) => {
     await page.evaluate(fixCharset);
 
     str = await page.evaluate(async () => {
-      [...document.querySelectorAll("[href]")].forEach(el => { if (el.href) el.href = el.href; });
-      [...document.querySelectorAll("a")].forEach(el => el.target = "_blank");
-      [...document.querySelectorAll("[src]")].forEach(el => { if (el.src) el.src = el.src; });
-      [...document.querySelectorAll("script, noscript")].forEach(el => el.remove());
+      [...document.querySelectorAll("[href]")].forEach(el => {
+        if (el.href) el.href = el.href;
+      });
+      [...document.querySelectorAll("a")].forEach(el => (el.target = "_blank"));
+      [...document.querySelectorAll("[src]")].forEach(el => {
+        if (el.src) el.src = el.src;
+      });
+      [...document.querySelectorAll("script, noscript, link[rel=preload]")].forEach(el => el.remove());
       [...document.querySelectorAll("iframe")].forEach(el => {
         const rect = el.getBoundingClientRect();
         const computed = window.getComputedStyle(el);
@@ -91,13 +103,12 @@ module.exports.snapshot = async (url, options = {}) => {
         domEvents.forEach(name => el.hasAttribute(name) && el.removeAttribute(name));
       });
       const img = new Image();
-      return document.documentElement.outerHTML
-        .replace(/url\(([^)]+)\)/g, (all, src) => {
-          src = src.replace(/(['"]|&quot;)/g, "");
-          if (src.startsWith("#")) return `url(${src})`;
-          img.src = src;
-          return `url(${img.src})`;
-        });
+      return document.documentElement.outerHTML.replace(/url\(([^)]+)\)/g, (all, src) => {
+        src = src.replace(/(['"]|&quot;)/g, "");
+        if (src.startsWith("#")) return `url(${src})`;
+        img.src = src;
+        return `url(${img.src})`;
+      });
     });
   } catch (e) {
     throw e;
@@ -108,10 +119,19 @@ module.exports.snapshot = async (url, options = {}) => {
 };
 
 module.exports.screenshot = async (url, options = {}) => {
-  const launchOptions = { ...defaultOptions.launchOptions, ...options.launchOptions };
+  const launchOptions = {
+    ...defaultOptions.launchOptions,
+    ...options.launchOptions
+  };
   const gotoOptions = { ...defaultOptions.gotoOptions, ...options.gotoOptions };
-  const emulateOptions = { ...defaultOptions.emulateOptions, ...options.emulateOptions };
-  const screenshotOptions = { ...defaultOptions.screenshotOptions, ...options.screenshotOptions };
+  const emulateOptions = {
+    ...defaultOptions.emulateOptions,
+    ...options.emulateOptions
+  };
+  const screenshotOptions = {
+    ...defaultOptions.screenshotOptions,
+    ...options.screenshotOptions
+  };
 
   let browser = options.browser;
   let page;
@@ -121,17 +141,16 @@ module.exports.screenshot = async (url, options = {}) => {
       page = await options.pageInitializer(browser, url, {
         launchOptions,
         gotoOptions,
-        emulateOptions,
+        emulateOptions
       });
     } else {
       browser = await puppeteer.launch(launchOptions);
       page = await defaultOptions.pageInitializer(browser, url, {
         launchOptions,
         gotoOptions,
-        emulateOptions,
+        emulateOptions
       });
     }
-    await scrollToPageBottomThenBackToTop(page);
     const evaluates = options.evaluates || defaultOptions.evaluates;
     for (let i = 0; i < evaluates.length; i++) {
       await evaluates[i](page);

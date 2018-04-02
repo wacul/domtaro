@@ -6,8 +6,7 @@ const argv = require("yargs")
   .alias("t", "type")
   .default("t", "snapshot")
   .describe("t", "Set type. snapshot or screenshot.")
-  .help("help")
-  .argv;
+  .help("help").argv;
 const domtaro = require("../index");
 
 (async () => {
@@ -22,4 +21,3 @@ const domtaro = require("../index");
     process.exit();
   }
 })();
-
