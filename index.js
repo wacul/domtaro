@@ -28,8 +28,8 @@ const defaultOptions = {
 };
 module.exports.defaultOptions = defaultOptions;
 
-async function wait() {
-  await new Promise(resolve => setTimeout(resolve, 100));
+async function wait(t = 100) {
+  await new Promise(resolve => setTimeout(resolve, t));
   await new Promise(resolve => window.requestIdleCallback(resolve, { timeout: 5000 }));
 }
 
@@ -67,6 +67,7 @@ module.exports.snapshot = async (url, options = {}) => {
         emulateOptions,
       });
     }
+    await scrollToPageBottomThenBackToTop(page);
     const evaluates = options.evaluates || defaultOptions.evaluates;
     for (let i = 0; i < evaluates.length; i++) {
       await evaluates[i](page);
@@ -130,6 +131,7 @@ module.exports.screenshot = async (url, options = {}) => {
         emulateOptions,
       });
     }
+    await scrollToPageBottomThenBackToTop(page);
     const evaluates = options.evaluates || defaultOptions.evaluates;
     for (let i = 0; i < evaluates.length; i++) {
       await evaluates[i](page);
