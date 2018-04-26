@@ -10,7 +10,9 @@
     "type": "git",
     "url": "git+https://github.com/wacul/domtaro.git"
   },
-  "keywords": ["dom"],
+  "keywords": [
+    "dom"
+  ],
   "author": "WACUL INC.",
   "license": "MIT",
   "bin": {
@@ -21,7 +23,7 @@
   },
   "homepage": "https://github.com/wacul/domtaro#readme",
   "dependencies": {
-    "puppeteer": "^0.13.0",
+    "puppeteer": "^1.0.0",
     "yargs": "^10.0.3"
   }
 }
