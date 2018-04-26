@@ -21,7 +21,8 @@ const defaultOptions = {
       userAgent: opts.emulateOptions.userAgent,
       viewport: {
         width: opts.emulateOptions.viewport.width,
-        height: h
+        height: h,
+        deviceScaleFactor: opts.emulateOptions.viewport.deviceScaleFactor || 1
       }
     });
     await page.evaluate(wait);
