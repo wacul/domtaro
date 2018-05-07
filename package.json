@@ -1,6 +1,6 @@
 {
   "name": "domtaro",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Fetch dom snapshots",
   "main": "index.js",
   "scripts": {
@@ -10,9 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/wacul/domtaro.git"
   },
-  "keywords": [
-    "dom"
-  ],
+  "keywords": ["dom"],
   "author": "WACUL INC.",
   "license": "MIT",
   "bin": {
