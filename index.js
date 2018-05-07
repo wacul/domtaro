@@ -156,6 +156,14 @@ module.exports.screenshot = async (url, options = {}) => {
     for (let i = 0; i < evaluates.length; i++) {
       await evaluates[i](page);
     }
+    if (screenshotOptions.clip) {
+      const documentHeight = await page.evaluate(getDocumentHeight);
+      screenshotOptions.clip.y = Math.max(screenshotOptions.clip.y, 0);
+      const h = screenshotOptions.clip.y + screenshotOptions.clip.height;
+      if (h > documentHeight) {
+        screenshotOptions.clip.height = documentHeight - screenshotOptions.clip.y;
+      }
+    }
     buff = await page.screenshot(screenshotOptions);
   } catch (e) {
     throw e;
